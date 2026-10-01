@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>Sebrae — Preparar rascunho</title>
+<link rel="stylesheet" href="panel.css">
+<main>
+  <h1>Preparar rascunho NF-e</h1>
+  <p>Use a aba do Sebrae já autenticada. Este assistente não emite notas nem altera o estoque local.</p>
+  <p class="warning">V1 para produtos/clientes já cadastrados, venda dentro do estado, Pix e sem transporte. Revise a tributação com seu responsável fiscal. Não use para uma nota que já existe.</p>
+  <label>Plano validado pelo Python <input id="file" type="file" accept=".json,application/json"></label>
+  <section id="preview"></section>
+  <p><label><input type="checkbox" id="approval"> Revisei este pedido e autorizo preencher e salvar somente um rascunho no Sebrae indicado.</label></p>
+  <nav>
+    <button id="check" disabled>Conferir aba</button>
+    <button id="fill" disabled>Montar rascunho</button>
+    <button id="save" disabled>Salvar e conferir</button>
+    <button id="receipt" disabled>Consultar registro</button>
+    <button id="export" disabled>Exportar resultado</button>
+  </nav>
+  <pre id="status" role="status" aria-live="polite">Selecione um plano. A instalação não significa homologação em produção.</pre>
+  <p>Após salvar, revise a nota no portal. A emissão é uma etapa manual, fora deste assistente. Se falhar, não comece outra nota: concilie a aba e o registro.</p>
+</main>
+<script src="protocol.js"></script>
+<script src="panel.js"></script>
+</html>

@@ -1,0 +1,18 @@
+{
+  "reference": "EXEMPLO-NAO-EMITIR-001",
+  "issuer_document": "11222333000181",
+  "customer": {"document": "52998224725", "name": "CLIENTE TESTE"},
+  "issue_date": "2026-10-01",
+  "delivery_date": "2026-10-01",
+  "operation": "Venda Dentro do Estado",
+  "cfop": "5102",
+  "presence": "1",
+  "payment": "PIX",
+  "freight_mode": "Sem Ocorrência de Transporte",
+  "freight": "0,00",
+  "expected_total": "25,00",
+  "notes": "EXEMPLO FICTICIO. SUBSTITUA TODOS OS DADOS ANTES DE USAR.",
+  "items": [
+    {"portal_code": "CODIGO-DO-PORTAL", "description": "PRODUTO TESTE", "unit": "UN", "quantity": "2", "unit_price": "12,50", "discount": "0,00"}
+  ]
+}

@@ -1,0 +1,10 @@
+body {font: 16px system-ui, sans-serif; margin: 0; color: #192b39; background: #f1f5f9;}
+main {max-width: 980px; margin: 32px auto; padding: 28px; background: white; border-radius: 12px;}
+h1 {font-size: 26px;}
+.warning {padding: 14px; background: #fff5dc; border-left: 4px solid #bd8200;}
+button {padding: 10px 15px; margin: 5px; cursor: pointer;}
+button:disabled {cursor: default;}
+pre {white-space: pre-wrap; overflow-wrap: anywhere; background: #edf2f7; padding: 16px;}
+table {width: 100%; border-collapse: collapse; margin: 18px 0;}
+th,td {padding: 8px; border-bottom: 1px solid #ccd5df; text-align: left;}
+input[type=file] {display: block; margin: 12px 0;}

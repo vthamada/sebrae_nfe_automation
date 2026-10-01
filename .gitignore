@@ -1,0 +1,28 @@
+# Credenciais, sessões e configuração local
+.env
+data/browser-profile/
+**/Cookies
+**/Login Data
+
+# Dados operacionais e artefatos potencialmente sensíveis
+*.db
+*.db-shm
+*.db-wal
+logs/
+screenshots/
+exports/
+
+# Python e ferramentas
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+tmp????????/
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

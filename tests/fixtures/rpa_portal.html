@@ -1,0 +1,129 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Offline NF-e fixture</title>
+<style>.ng-hide,[hidden]{display:none} .modal {border:1px solid black} td{padding:4px}</style>
+<form id="formGeneralInfo">
+<select ng-model="controller.currentInvoice.InvoiceModel"><option value="">Selecione</option><option>NF-e</option></select>
+<select ng-model="controller.currentInvoice.OperationTypeID"><option value="">Selecione</option><option>Saída</option></select>
+<input type="date" ng-model="controller.currentInvoice.IssueDate">
+<input type="date" ng-model="controller.currentInvoice.InputOutputDate">
+</form>
+<input placeholder="Nome do cliente ou fornecedor" ng-model="controller.currentInvoice.PersonInvoice.OfficialName" aria-expanded="false" aria-owns="clients">
+<ul id="clients" role="listbox" hidden></ul>
+<input ng-model="controller.currentInvoice.PersonInvoice.Cpf">
+<input ng-model="controller.currentInvoice.PersonInvoice.Cnpj" hidden>
+<select ng-model="controller.currentInvoice.TransactionNatureID"><option value="">Selecione</option><option>Venda Dentro do Estado</option></select>
+<input name="DefaultCfop" ng-model="controller.currentDefaultCfop" aria-expanded="false" aria-owns="cfops">
+<ul id="cfops" role="listbox" hidden></ul>
+<form name="newItemForm">
+<input placeholder="DIGITE O NOME OU CÓDIGO DO ITEM" ng-model="controller.newItem.Item" aria-expanded="false" aria-owns="products">
+<ul id="products" role="listbox" hidden></ul>
+<input placeholder="QNTD." ng-model="controller.newItem.Amount">
+<select ng-model="controller.newItem.ItemUnit"><option value="?">Selecione</option></select>
+<div class="item-price"><div class="form-group"><label>Total</label><span class="price">0,00</span></div></div>
+<button type="button" class="bt-add-item">Incluir na NF</button>
+</form>
+<table id="items"><tbody></tbody></table>
+<input ng-model="controller.invoiceDiscount" value="R$ 0,00">
+<input ng-model="controller.currentInvoice.Shipping" value="R$ 0,00">
+<input ng-model="controller.currentInvoice.GeneralTaxes" value="R$ 0,00">
+<input ng-model="controller.currentInvoice.Insurance" value="R$ 0,00">
+<div class="total-value equal"><span class="value">0,00</span></div>
+<select ng-model="controller.shippingTypeID"><option>CIF</option><option>Sem Ocorrência de Transporte</option></select>
+<form name="newPaymentForm">
+<select ng-model="controller.newPaymentType"><option value="">Selecione</option><option>PIX</option></select>
+<select ng-model="controller.currentPaymentCondition"><option value="?">Selecione</option></select>
+<input ng-model="controller.newPaymentTypeValue" placeholder="Valor">
+<button type="button" class="bt-select-payment">Incluir</button>
+</form>
+<div class="payment-summary"><table><tbody id="payments"></tbody></table></div>
+<div id="editor" class="modal" hidden>
+<form name="itemDiscountForm">
+<input ng-model="controller.currentItem.Amount">
+<select ng-model="controller.currentItem.ItemUnit"><option>UN</option></select>
+<input ng-model="controller.currentItem.Value">
+<input ng-model="controller.currentItem.Discount">
+<input name="DefaultCfop" ng-model="controller.currentInvoiceItemCfop">
+<input ng-model="controller.currentItem.Item.Ncm">
+</form>
+<label for="submitItemDiscountForm" tabindex="0">Salvar</label>
+</div>
+<section id="extra" hidden>
+<select id="selConsumerPresenceCode"><option>1 - Operação presencial</option><option>9 - Operação não presencial, outros</option></select>
+<textarea id="txtAdditionalInformation"></textarea>
+</section>
+<button type="button" title="Salvar" id="save">Salvar</button>
+<button type="button" id="emit" onclick="document.body.dataset.emitted='true'">Emitir</button>
+<div id="success" class="modal" hidden>Nota salva com sucesso!<button type="button" id="ok">OK</button></div>
+<script>
+// Synthetic UI only. Every network request is intercepted by the test harness.
+const q = s=>document.querySelector(s), m=s=>q(`[ng-model="${s}"]`);
+const fmt=n=>`${Math.floor(n/100)},${String(n%100).padStart(2,'0')}`;
+const cents=s=>Math.round(Number(s.replace('R$','').trim().replace(',','.'))*100);
+const qty=s=>Math.round(Number(s.replace(',','.'))*1000);
+let items=[], payments=[], editing=null, code='';
+document.body.dataset.saves='0'; document.body.dataset.catalogPrice='1250';
+function suggestions(input, text, choose) {
+  const ul=q('#'+input.getAttribute('aria-owns'));
+  ul.replaceChildren(); const li=document.createElement('li');li.role='option';li.textContent=text;
+  li.onclick=()=>{ul.hidden=true; input.setAttribute('aria-expanded','false');choose();};
+  ul.append(li);ul.hidden=false; input.setAttribute('aria-expanded','true');
+}
+const client=m('controller.currentInvoice.PersonInvoice.OfficialName');
+client.addEventListener('input',()=>setTimeout(()=>suggestions(client,'Cliente: [529.982.247-25] CLIENTE TESTE',()=>{
+  client.value='CLIENTE TESTE';m('controller.currentInvoice.PersonInvoice.Cpf').value='529.982.247-25';
+}),25));
+const cfop=m('controller.currentDefaultCfop');
+cfop.addEventListener('input',()=>setTimeout(()=>suggestions(cfop,'[5102] Venda de mercadoria adquirida ou recebida de terceiros',()=>{
+  cfop.value='[5102] Venda de mercadoria adquirida ou recebida de terceiros';
+}),25));
+const product=m('controller.newItem.Item');
+product.addEventListener('input',()=>{code=product.value;setTimeout(()=>suggestions(product,`Produto: ${code} - PRODUTO TESTE`,()=>{
+  product.value=`Produto: ${code} - PRODUTO TESTE`;
+  m('controller.newItem.ItemUnit').innerHTML='<option value="?">Selecione</option>';
+  // Close listbox first, then reset quantity after simulated AJAX.
+  setTimeout(()=>{
+    m('controller.newItem.Amount').value='1,000';m('controller.newItem.ItemUnit').innerHTML='<option>UN</option>';
+    q('.item-price .price').textContent='12,50';document.body.dataset.productLoaded='true';
+  },80);
+}),25);});
+function render() {
+  q('#items tbody').replaceChildren();
+  for (const item of items) {
+    const r=document.createElement('tr');r.innerHTML='<td class="description"><span class="barcode"></span><div class="name"></div></td><td class="quantity"><b></b> UN</td><td class="price"></td><td class="price"></td><td><button type="button" class="bt-discount">Editar</button></td>';
+    r.querySelector('.barcode').textContent=item.code;r.querySelector('.name').textContent='PRODUTO TESTE';
+    r.querySelector('.quantity b').textContent=String(item.qty/1000).replace('.',',');
+    const prices=r.querySelectorAll('.price');prices[0].textContent=fmt(item.price);prices[1].textContent=fmt(Math.round(item.qty*item.price/1000));
+    r.querySelector('.bt-discount').onclick=()=>{
+      editing=item;q('#editor').hidden=false;
+      m('controller.currentItem.Amount').value=String(item.qty/1000).replace('.',',');m('controller.currentItem.Value').value=fmt(item.price);
+      m('controller.currentItem.Discount').value='0,00';m('controller.currentInvoiceItemCfop').value='[5102] Venda';
+      m('controller.currentItem.Item.Ncm').value=document.body.dataset.missingNcm?'':'[85189090] Peças';
+    };
+    q('#items tbody').append(r);
+  }
+  q('.total-value .value').textContent=fmt(items.reduce((a,i)=>a+Math.round(i.qty*i.price/1000),0));
+  q('#payments').replaceChildren();
+  for(const p of payments) {const r=document.createElement('tr');r.innerHTML='<td>PIX</td><td></td>';r.children[1].textContent=fmt(p);q('#payments').append(r);}
+}
+q('.bt-add-item').onclick=()=>{items.push({code,qty:qty(m('controller.newItem.Amount').value),price:1250});render();product.value='';};
+q('label[for="submitItemDiscountForm"]').onclick=()=>{
+  editing.qty=qty(m('controller.currentItem.Amount').value);editing.price=cents(m('controller.currentItem.Value').value);
+  q('#editor').hidden=true;render();
+};
+m('controller.newPaymentType').onchange=()=>{m('controller.currentPaymentCondition').innerHTML='<option>QRCode</option>';};
+q('.bt-select-payment').onclick=()=>{payments.push(cents(m('controller.newPaymentTypeValue').value));render();};
+q('#save').onclick=()=>{
+  document.body.dataset.saves=String(Number(document.body.dataset.saves)+1);
+  const fields={};document.querySelectorAll('[ng-model]').forEach(e=>fields[e.getAttribute('ng-model')]=e.value);
+  localStorage.setItem('saved',JSON.stringify({fields,items,payments,presence:q('#selConsumerPresenceCode').value,notes:q('#txtAdditionalInformation').value}));
+  location.hash='#/invoice/detail/123';q('#extra').hidden=false;q('#success').hidden=false;
+};
+q('#ok').onclick=()=>q('#success').hidden=true;
+if(location.hash.includes('/detail/')) {
+  const s=JSON.parse(localStorage.getItem('saved'));if(s){
+    items=s.items;payments=s.payments;
+    m('controller.newItem.ItemUnit').innerHTML='<option>UN</option>';m('controller.currentPaymentCondition').innerHTML='<option>QRCode</option>';
+    for(const [key,value] of Object.entries(s.fields)) {const e=m(key);if(e)e.value=value;}
+    q('#extra').hidden=false;q('#selConsumerPresenceCode').value=s.presence;q('#txtAdditionalInformation').value=s.notes;render();
+  }
+}
+</script></html>

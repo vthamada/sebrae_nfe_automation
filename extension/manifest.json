@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Sebrae — Assistente de rascunhos",
+  "version": "0.1.0",
+  "description": "Prepara NF-e no Chrome já autenticado. Não emite nem transmite notas.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_title": "Preparar rascunho Sebrae"}
+}
